@@ -4,41 +4,95 @@ using UnityEngine;
 
 public class CoinSpawner : MonoBehaviour
 {
-    public GameObject Coin;
+    public GameObject Circle;
+    public GameObject coin;
+    private Dictionary<string, GameObject> keyValuePairs = new Dictionary<string, GameObject>();
+    public Transform Canvas;
+    public float spawnInterval = .2f;
+    private int totalSpawnedcoin = 0;
 
-    public int coinMax = 5;
-    public int coinMin = 1;
-
-    public int coinCurrentMax;
-
-    public Transform xPoint;
-    public Transform yPoint;
-    public float offset = 0f;
-
-    private float _xRadius;
-    private float _yRadius;
-
-    private void Awake()
-    {
-        _xRadius = xPoint.position.x;
-        _yRadius = yPoint.position.y;
-    }
-
-    // Start is called before the first frame update
     private void Start()
     {
-        coinCurrentMax = Random.Range(coinMin, coinMax);
-        for (int i = 0; i < coinCurrentMax; i++)
-            SpawnPickup(_xRadius, _yRadius);
+        InvokeRepeating("CoinPooling", spawnInterval, spawnInterval);
     }
 
-    private void SpawnPickup(float x, float y)
+    private void CoinPooling()
     {
-        Instantiate(Coin, RandomSpawnPosition(x, y), Quaternion.identity);
+        for (int i = 0; i < keyValuePairs.Count; i++)
+        {
+            if (keyValuePairs.ContainsKey($"coin {i}"))
+            {
+                GameObject objToSpawn = keyValuePairs[$"coin {i}"].gameObject;
+
+                if (!objToSpawn.activeSelf)
+                {
+                    Vector2 point = GetOutsideCircleRadiusPoint();
+
+                    objToSpawn.transform.localPosition = new Vector3(point.x, point.y);
+                    objToSpawn.SetActive(true);
+
+                    return;
+                }
+            }
+        }
+
+        InstantiateCoin();
     }
 
-    private Vector2 RandomSpawnPosition(float x, float y)
+    private void InstantiateCoin()
     {
-        return new Vector2(Random.Range(-x - offset, x + offset), Random.Range(-y - offset, y + offset));
+        GameObject spawnedcoin = Instantiate(coin, Canvas);
+        spawnedcoin.name = $"coin {totalSpawnedcoin}";
+        totalSpawnedcoin++;
+        keyValuePairs.Add(spawnedcoin.name, spawnedcoin);
+
+        RectTransform coinRectTransform = spawnedcoin.GetComponent<RectTransform>();
+
+        Vector2 point = GetOutsideCircleRadiusPoint();
+
+        int randomcoinSizeX = Random.Range(10, 25);
+        int randomcoinSizeY = Random.Range(10, 25);
+
+        Vector2 randomedPosition = new Vector2(point.x, point.y);
+        Vector2 randomedSize = new Vector2(randomcoinSizeX, randomcoinSizeY);
+
+        coinRectTransform.localPosition = randomedPosition;
+        coinRectTransform.sizeDelta = randomedSize;
+    }
+
+    private Vector2 GetOutsideCircleRadiusPoint()
+    {
+        float areaSize = 70;
+        float offset = 120;
+
+        float ratio = areaSize / offset;
+        float radius = Mathf.Sqrt(Random.Range(ratio * ratio, 1f)) * offset;
+
+        Vector2 circlePosition = new Vector2(Circle.transform.position.x, Circle.transform.position.y);
+        Vector3 point = (circlePosition + Random.insideUnitCircle.normalized) * radius;
+
+        if (point.x > 120)
+        {
+            point.x = Random.Range(-offset, areaSize);
+            point.y = Random.Range(-120, 120);
+        }
+        else if (point.x < -120)
+        {
+            point.x = Random.Range(-areaSize, offset);
+            point.y = Random.Range(-120, 120);
+        }
+
+        if (point.y > 120)
+        {
+            point.x = Random.Range(-120, 120);
+            point.y = Random.Range(-offset, areaSize);
+        }
+        else if (point.y < -120)
+        {
+            point.x = Random.Range(-120, 120);
+            point.y = Random.Range(-areaSize, offset);
+        }
+
+        return point;
     }
 }
