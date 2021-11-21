@@ -5,43 +5,34 @@ using UnityEngine;
 public class CircleScript : MonoBehaviour
 {
     private Rigidbody2D rigidBody2D;
-    public KeyCode upButton = KeyCode.W;
-    public KeyCode downButton = KeyCode.S;
-    public KeyCode rightButton = KeyCode.D;
-    public KeyCode leftButton = KeyCode.A;
-    public float speed = 10.0f;
+    private Vector2 inputVector = Vector2.zero;
+
+    [SerializeField] public float initialSpeed = 10.0f;
 
     private void Start()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        Vector2 velocity = rigidBody2D.velocity;
-        if (Input.GetKey(upButton))
+        if (Input.GetButtonDown("Fire1"))
         {
-            velocity.y = speed;
+            inputVector = GetCursorDirection();
+            MoveCircle(inputVector, initialSpeed);
         }
-        else if (Input.GetKey(downButton))
-        {
-            velocity.y = -speed;
-        }
-        else if (Input.GetKey(leftButton))
-        {
-            velocity.x = -speed;
-        }
-        else if (Input.GetKey(rightButton))
-        {
-            velocity.x = speed;
-        }
-        else
-        {
-            velocity.y = 0.0f;
-            velocity.x = 0.0f;
-        }
-
-        rigidBody2D.velocity = velocity;
     }
 
+    private void MoveCircle(Vector2 input, float velocity)
+    {
+        rigidBody2D.velocity = inputVector * velocity;
+    }
+
+    public Vector2 GetCursorDirection()
+    {
+        Vector3 worldMousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, this.transform.position.z));
+        Vector3 direction = worldMousePosition - this.transform.position;
+        direction.Normalize();
+        return (Vector2)direction;
+    }
 }
