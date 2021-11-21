@@ -5,31 +5,43 @@ using UnityEngine;
 public class CircleScript : MonoBehaviour
 {
     private Rigidbody2D rigidBody2D;
-    public float xInitialForce;
-    public float yInitialForce;
+    public KeyCode upButton = KeyCode.W;
+    public KeyCode downButton = KeyCode.S;
+    public KeyCode rightButton = KeyCode.D;
+    public KeyCode leftButton = KeyCode.A;
+    public float speed = 10.0f;
 
     private void Start()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
-
-        StartGame();
     }
-    private void PushCircle()
+
+    private void Update()
     {
-        float yRandomInitialForce = Random.Range(-yInitialForce, yInitialForce);
-        float randomDirection = Random.Range(0, 2);
-        if (randomDirection < 1.0f)
+        Vector2 velocity = rigidBody2D.velocity;
+        if (Input.GetKey(upButton))
         {
-            rigidBody2D.AddForce(new Vector2(-xInitialForce, yRandomInitialForce));
+            velocity.y = speed;
+        }
+        else if (Input.GetKey(downButton))
+        {
+            velocity.y = -speed;
+        }
+        else if (Input.GetKey(leftButton))
+        {
+            velocity.x = -speed;
+        }
+        else if (Input.GetKey(rightButton))
+        {
+            velocity.x = speed;
         }
         else
         {
-            rigidBody2D.AddForce(new Vector2(xInitialForce, yRandomInitialForce));
+            velocity.y = 0.0f;
+            velocity.x = 0.0f;
         }
+
+        rigidBody2D.velocity = velocity;
     }
 
-    private void StartGame()
-    {
-        Invoke("PushCircle", 2);
-    }
 }
